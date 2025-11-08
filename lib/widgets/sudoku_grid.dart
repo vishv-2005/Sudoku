@@ -26,30 +26,30 @@ class SudokuGrid extends StatelessWidget {
 
   bool _isInSameBox(int row, int col) {
     if (selectedRow == null || selectedCol == null) return false;
-    return (row ~/ 3) == (selectedRow! ~/ 3) && 
-           (col ~/ 3) == (selectedCol! ~/ 3);
+    return (row ~/ 3) == (selectedRow! ~/ 3) &&
+        (col ~/ 3) == (selectedCol! ~/ 3);
   }
 
   bool _hasConflict(int row, int col, int value) {
     if (value == 0 || (row == selectedRow && col == selectedCol)) return false;
-    
+
     // Check if this cell has the same value as selected cell
-    if (selectedRow != null && selectedCol != null && 
+    if (selectedRow != null && selectedCol != null &&
         board[selectedRow!][selectedCol!] != 0 &&
         board[selectedRow!][selectedCol!] == value) {
       // Check if they're in same row, col, or box
       return _isInSameRow(row) || _isInSameCol(col) || _isInSameBox(row, col);
     }
-    
+
     // Check if selected cell value conflicts with this cell
-    if (selectedRow != null && selectedCol != null && 
+    if (selectedRow != null && selectedCol != null &&
         board[selectedRow!][selectedCol!] != 0) {
       int selectedValue = board[selectedRow!][selectedCol!];
       if (value == selectedValue) {
         return _isInSameRow(row) || _isInSameCol(col) || _isInSameBox(row, col);
       }
     }
-    
+
     return false;
   }
 
@@ -106,79 +106,94 @@ class SudokuGrid extends StatelessWidget {
               double right = (col + 1) % 3 == 0 ? 3.0 : 0.5;
               double bottom = (row + 1) % 3 == 0 ? 3.0 : 0.5;
 
+              // Determine cell background color
               Color cellColor = const Color(0xFF2A2A3E);
               if (isSelected) {
-                cellColor = Colors.blue[700]!.withOpacity(0.5);
+                cellColor = Colors.blue[700]!;
               } else if (hasConflict) {
                 cellColor = Colors.red[900]!.withOpacity(0.4);
               } else if (sameNumberHighlighted) {
-                cellColor = Colors.amber[800]!.withOpacity(0.3);
+                cellColor = Colors.amber[700]!.withOpacity(0.35);
               } else if (isRelated) {
-                cellColor = Colors.blue[900]!.withOpacity(0.2);
+                cellColor = Colors.blue[800]!.withOpacity(0.25);
               } else if (isFixed[row][col]) {
                 cellColor = const Color(0xFF2D2D44);
               }
 
+              // Determine text color - ALWAYS VISIBLE
+              Color textColor;
+              if (hasConflict) {
+                textColor = Colors.red[300]!;
+              } else if (isSelected) {
+                textColor = Colors.white;
+              } else if (sameNumberHighlighted) {
+                textColor = Colors.amber[200]!;
+              } else if (isRelated) {
+                textColor = Colors.lightBlue[200]!;
+              } else if (isFixed[row][col]) {
+                textColor = Colors.deepPurple[200]!;
+              } else {
+                textColor = Colors.blue[200]!;
+              }
+
               return GestureDetector(
                 onTap: () => onCellTap(row, col),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
+                child: Container(
                   decoration: BoxDecoration(
                     color: cellColor,
-                    borderRadius: isSelected ? BorderRadius.circular(4) : BorderRadius.zero,
+                    // REMOVED borderRadius to fix the rendering error
                     border: Border(
                       top: BorderSide(
                         width: top,
-                        color: top > 2 
-                            ? Colors.deepPurple[400]! 
+                        color: top > 2
+                            ? Colors.deepPurple[400]!
                             : Colors.grey[700]!,
                       ),
                       left: BorderSide(
                         width: left,
-                        color: left > 2 
-                            ? Colors.deepPurple[400]! 
+                        color: left > 2
+                            ? Colors.deepPurple[400]!
                             : Colors.grey[700]!,
                       ),
                       right: BorderSide(
                         width: right,
-                        color: right > 2 
-                            ? Colors.deepPurple[400]! 
+                        color: right > 2
+                            ? Colors.deepPurple[400]!
                             : Colors.grey[700]!,
                       ),
                       bottom: BorderSide(
                         width: bottom,
-                        color: bottom > 2 
-                            ? Colors.deepPurple[400]! 
+                        color: bottom > 2
+                            ? Colors.deepPurple[400]!
                             : Colors.grey[700]!,
                       ),
                     ),
                     boxShadow: isSelected ? [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: Colors.blue.withOpacity(0.4),
                         blurRadius: 8,
                         spreadRadius: 1,
                       ),
                     ] : null,
                   ),
                   child: Center(
-                    child: AnimatedScale(
-                      scale: isSelected ? 1.1 : 1.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Text(
-                        value == 0 ? '' : value.toString(),
-                        style: TextStyle(
-                          fontSize: isSelected ? 22 : 20,
-                          fontWeight: isFixed[row][col]
-                              ? FontWeight.bold
-                              : FontWeight.w600,
-                          color: hasConflict
-                              ? Colors.red[400]
-                              : (isFixed[row][col]
-                                  ? Colors.deepPurple[300]
-                                  : Colors.deepPurple[200]),
-                          letterSpacing: 0.5,
-                        ),
+                    child: Text(
+                      value == 0 ? '' : value.toString(),
+                      style: TextStyle(
+                        fontSize: isSelected ? 26 : 20,
+                        fontWeight: isFixed[row][col]
+                            ? FontWeight.bold
+                            : FontWeight.w600,
+                        color: textColor,
+                        letterSpacing: 0.5,
+                        decoration: TextDecoration.none,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.7),
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -191,4 +206,3 @@ class SudokuGrid extends StatelessWidget {
     );
   }
 }
-
